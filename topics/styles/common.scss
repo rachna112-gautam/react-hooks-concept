@@ -1,0 +1,26 @@
+@import "./_vars.scss";
+
+.bgYellow{
+    background-color: $yellow1;
+}
+
+.fontBlack{
+    color: $gray1;
+}
+
+.fontwhite{
+    color: $white1;
+}
+
+.padd8{
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.width100{
+    width: 100px;
+}
+
+.radius15{
+    border-radius: 15px;
+}

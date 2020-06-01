@@ -1,0 +1,292 @@
+/** HOOKS **/
+
+function useState(init){
+  let _val = init;
+  return [
+    _val,
+    (newVal) => {
+      _val = newVal;
+    }
+  ]
+}
+
+const [age, setAge] = useState(21);
+console.log(age);
+setAge(23);
+console.log(age);
+
+const React = (function() {
+    let _val;
+    return {
+        render(Component){
+            const Comp = Component();
+            Comp.render();
+            return Comp;
+        },
+        useState(init){
+            _val = _val || init;
+
+            function setState(newVal){
+                _val = newVal;
+            }
+        }
+    }
+    return [_val, setState];
+})();
+
+function AgeComp(){
+    const [age, setAge] = React.useState(21);
+    return {
+        render(){
+            console.log(age);
+        },
+        ageUp(){
+            setAge(age + 1);
+        }
+    }
+}
+
+let App;
+
+App = React.render(AgeComp);
+App.ageUp();
+React.render(AgeComp);
+
+/** MANAGING LIST **/
+import React, {useState} from "react";
+import "./App.scss";
+import NameTag from "./components/nameTag";
+
+//import Input from './components/input';
+
+// const makeGreen = BaseComponent => props => {
+
+//   const addGreen = {
+//     style : {
+//       color : 'green'
+//     }
+//   }
+
+//   const newProps = {
+//     ...props, ...addGreen
+//   }
+
+// return <BaseComponent {... newProps}/>
+// }
+
+// const removeInline = BaseComponent => props => {
+//   const newProps = {...props};
+//   delete newProps.style;
+//   return <BaseComponent {...newProps}></BaseComponent>
+
+// }
+// const GreenNameTag = makeGreen(NameTag);
+// const RemoveTag = removeInline(NameTag);
+
+//   const [age, setAge] = useState(21);
+//   const ageUpHandle = () => {
+//     setAge(age + 1);
+//   }
+//   const ageDownHandle = () => {
+//     setAge(age - 1);
+//   }
+
+const initialNames = [
+        {firstName: "chris", lastName: "hemsworth" },
+        {firstName: "stefan" ,lastName: "salvatore"},
+        {firstName: "damon", lastName: "salvatore"},
+        {firstName: "bella", lastName: "swan"}
+]
+function App() {
+  const [names, setNames] = useState(initialNames);
+  return (
+    <div className="App">
+      <header className="App-header">
+        {/*<h1>Use State Hook</h1>
+       <h2>Age: {age}</h2>
+       <button onClick={ageUpHandle}>Age up</button>
+       <button onClick = {ageDownHandle}>Age down</button>*/}
+        <h1 className="name title">Names List</h1>
+       { names.map((v, i) => {
+          return <NameTag key={`${i}${v.firstName}${v.lastName}`} firstName={v.firstName}  lastName={v.lastName} ></NameTag>
+        })
+      }
+        {/*<NameTag firstName={names[0].firstName} lastName={names[0].lastName} ></NameTag>
+          <NameTag firstName={names[1].firstName}  lastName={names[1].lasttName} ></NameTag>
+          <NameTag firstName={names[2].firstName}  lastName={names[2].lastName} ></NameTag>*/}
+        
+      </header>
+    </div>
+  );
+}
+
+export default App;
+
+
+/** EVENTS **/
+import useList from "./hooks/useList";
+const initialList = [
+  { name: "fries", calories: 60 },
+  { name: "Burger", calories: 40 },
+  { name: "Pizza", calories: 30 },
+];
+function App() {
+  const item = useList(initialList);
+  const [editable, setEditable] = useState(false);
+  function removeItemHandle(e) {
+    // console.dir(e.target.name);
+    // const filteredList = list.filter((v) => v.name !== e.target.name);
+    // setList(filteredList);
+    item.removeItem(e.target.name);
+  }
+  function addText(){
+      setEditable(true);
+  }
+
+  function changeText(e, i){
+    if(e.key === 'Enter'){
+         setEditable(!editable);
+        //  console.log(i);
+       item.saveItem(i, e.target.value);
+    }
+    
+  }
+  return (
+    <div className="App">
+      <header className="App-header">
+        <h2>Grocery List</h2>
+        {item.list.map((v, k) => {
+          return (
+            <Item
+              key={`${k}${v.name}${v.calories}`}
+              item={v}
+              onClick={removeItemHandle}
+              editable={editable}
+              onDoubleClick={addText}
+              onKeyPress={changeText}
+              index={k}
+              >
+            </Item>
+          );
+        })}
+      </header>
+    </div>
+  );
+}
+
+export default App;
+
+
+/** ONCHANGE EVENTS **/
+
+
+  const [name, setName] = useState('Your Name');
+  const [income, setIncome] = useState('high');
+
+  function changeName(e){
+    setName(e.target.value);
+  }
+
+  function changeInc(e){
+    setIncome(e.target.value);
+  }
+    
+    function submitHandle(){
+      console.log('state = ', name, income);
+    }
+    
+<form onSubmit={submitHandle}>
+          <div>
+            <span>Name: </span>
+            <input value={name} type="text" onChange={changeName}></input>
+          </div>
+          <div>
+            <span>Income: </span>
+            <select value={income} onChange={changeInc}>
+              <option value="high">high</option>
+              <option value="medium">medium</option>
+              <option value="low">low</option>
+            </select>
+            <input type="submit" value="submit"/>
+          </div>
+        </form>
+
+
+/**DRAGGABLE LIST*/
+import React, { useState } from "react";
+import "./App.css";
+
+const initList = [1, 2, 3, 4, 5, 6];
+function App() {
+  const [list, setList] = useState(initList);
+  const [dragged, setDragged] = useState(null);
+
+  function onDragStartHandle(e, index){
+    setDragged(list[index]);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/html', e.target.parentNode);
+    e.dataTransfer.setDragImage(e.target.parentNode, 20, 20);
+  }
+
+  function onDragOverHandle(i){
+      const draggedOverItem = list[i];
+      if(draggedOverItem === dragged)
+      return;
+
+      const item = list.filter(item => item !== dragged)
+
+      item.splice(i, 0, dragged);
+
+      setList(item);
+  }
+  return (
+    <div className="App">
+      <header className="App-header">
+        <h1>List of items</h1>
+        {list.map((item, i) => {
+          return (
+            <li key={i} onDragOver={()=> onDragOverHandle(i)}className="li-style">
+              <div draggable onDragStart={(e) => onDragStartHandle(e, i)}>{item}</div>
+            </li>
+          );
+        })}
+      </header>
+    </div>
+  );
+}
+
+export default App;
+
+
+
+//index.js config
+
+import React from 'react';
+import ReactDOM from 'react-dom';
+import './index.css';
+import App from './App';
+import * as serviceWorker from './serviceWorker';
+import balanceReducer  from "./store/balanceReducer";
+import { createStore, combineReducers , applyMiddleware} from 'redux';
+import { Provider } from 'react-redux';
+import loanReducer from './store/loanReducer';
+import thunk from 'redux-thunk';
+
+
+
+const store = createStore(combineReducers({
+  balanceReducer,
+  loanReducer
+}), applyMiddleware(thunk));
+
+ReactDOM.render(
+  <Provider store={store}>
+    <App />
+  </Provider>,
+  document.getElementById('root')
+);
+
+// If you want your app to work offline and load faster, you can change
+// unregister() to register() below. Note this comes with some pitfalls.
+// Learn more about service workers: https://bit.ly/CRA-PWA
+serviceWorker.unregister();
